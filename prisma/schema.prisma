@@ -1,0 +1,62 @@
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum Role {
+    USER
+    ADMIN
+}
+
+enum UserType {
+    GOOGLE
+    GITHUB
+    EMAIL_PASSWORD
+}
+
+model User {
+    id                      String    @id @default(auto()) @map("_id") @db.ObjectId
+    username                String    @unique
+    email                   String    @unique
+    role                    Role      @default(USER)
+    password                String
+    loginType               UserType  @default(EMAIL_PASSWORD)
+    isEmailVerified         Boolean   @default(false)
+    refreshToken            String?
+    forgotPasswordToken     String?
+    forgotPasswordExpiry    DateTime?
+    emailVerificationToken  String?
+    emailVerificationExpiry DateTime?
+    social                  Json?
+    createdAt               DateTime  @default(now())
+    updatedAt               DateTime  @updatedAt
+
+    Quotes Quotes[]
+
+    @@index([id])
+}
+
+model Quotes {
+    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    content    String
+    tags       String[]
+    creatorId  String   @db.ObjectId
+    creator    User     @relation(fields: [creatorId], references: [id])
+    author     String
+    authorSlug String
+    length     Int
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+}
+
+model StatusCode {
+    id            String @id @default(auto()) @map("_id") @db.ObjectId
+    statusCode    Int    @unique
+    statusMessage String
+    description   String
+    category      String
+}
