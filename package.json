@@ -37,6 +37,7 @@
     "@types/morgan": "^1.9.10",
     "@types/nodemailer": "^7.0.1",
     "@types/request-ip": "^0.0.41",
+    "serverless-http": "^4.0.0",
     "tsx": "^4.20.5"
   }
 }

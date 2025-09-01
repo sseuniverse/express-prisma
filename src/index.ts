@@ -1,62 +1,7 @@
-import express from "express";
-import cookieParser from "cookie-parser";
 import httpServer from "node:http";
-import cors from "cors";
-import { rateLimit } from "express-rate-limit";
-import requestIP from "request-ip";
+import app from "./app";
 
-import morganMiddleware from "./logger/morgan.logger";
-import { errorHandler } from "./middlewares/error.middleware";
-import { ApiError } from "./utils/ApiError";
-
-// Routers
-import userRoute from "./routes/user.route";
-import quoteRoute from "./routes/quote.route";
-import statusCodeRoute from "./routes/statuscode.route";
-import redirectRoute from "./routes/redirect.route";
-
-const app = express();
 const server = httpServer.createServer(app);
-
-// Rate limiter to avoid misuse of the service and avoid cost spikes
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5000,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req, res) => {
-    return req.clientIp || "unknown";
-  },
-  handler: (_, __, ___, options) => {
-    throw new ApiError(
-      options.statusCode || 500,
-      `There are too many requests. You are only allowed ${
-        options.max
-      } requests per ${options.windowMs / 60000} minutes`
-    );
-  },
-});
-
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(express.static("public"));
-app.use(cookieParser());
-app.use(cors({ origin: "*", credentials: true }));
-app.use(requestIP.mw());
-app.use(limiter);
-
-app.use(morganMiddleware);
-
-app.get("/", (req, res) => {
-  res.status(200).send("Express Routes Found");
-});
-
-app.use("/api/v1/users", userRoute);
-app.use("/api/v1/quotes", quoteRoute);
-app.use("/api/v1/status", statusCodeRoute);
-app.use("/api/v1/redirect", redirectRoute);
-
-app.use(errorHandler);
 
 server.listen(2000, () => {
   console.log(`Server is running on port 2000`);
