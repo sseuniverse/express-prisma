@@ -1,4 +1,6 @@
+import fs from "node:fs";
 import { Request } from "express";
+import logger from "../logger/winston.logger";
 
 export const filterObjectKeys = (
   fieldsArray: string[],
@@ -51,6 +53,44 @@ export const getStaticFilePath = (req: Request, fileName: string) => {
 
 export const getLocalPath = (fileName: string) => {
   return `public/images/${fileName}`;
+};
+
+export const removeLocalFile = (localPath: string) => {
+  fs.unlink(localPath, (err) => {
+    if (err) {
+      logger.error("Error while removing local files: ", err);
+    } else {
+      logger.info("Removed local: ", localPath);
+    }
+  });
+};
+
+export const removeUnusedMulterImageFilesOnError = (req: Request) => {
+  try {
+    const multerFile = req.file;
+    const multerFiles = req.files;
+
+    if (multerFile) {
+      // If there is file uploaded and there is validation error
+      // We want to remove that file
+      removeLocalFile(multerFile.path);
+    }
+
+    if (multerFiles) {
+      const filesValueArray: Express.Multer.File[][] =
+        Object.values(multerFiles);
+      // If there are multiple files uploaded for more than one fields
+      // We want to remove those files as well
+      filesValueArray.map((fileFields) => {
+        fileFields.map((fileObject) => {
+          removeLocalFile(fileObject.path);
+        });
+      });
+    }
+  } catch (error) {
+    // fail silently
+    logger.error("Error while removing image files: ", error);
+  }
 };
 
 export const getRandomNumber = (max: number) => {

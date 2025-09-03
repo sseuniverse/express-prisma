@@ -13,6 +13,10 @@ import userRoute from "./routes/user.route";
 import quoteRoute from "./routes/quote.route";
 import statusCodeRoute from "./routes/statuscode.route";
 import redirectRoute from "./routes/redirect.route";
+import todoRoute from "./routes/todo.route";
+
+// Routers - Social
+import profileSocialRoute from "./routes/social-media/profile.route";
 
 const app = express();
 
@@ -53,6 +57,9 @@ app.use("/api/v1/users", userRoute);
 app.use("/api/v1/quotes", quoteRoute);
 app.use("/api/v1/status", statusCodeRoute);
 app.use("/api/v1/redirect", redirectRoute);
+app.use("/api/v1/todo", todoRoute);
+
+app.use("/api/v1/social-media/profile", profileSocialRoute);
 
 app.use(errorHandler);
 
