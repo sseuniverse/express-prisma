@@ -7,6 +7,7 @@ generator client {
     provider = "prisma-client-js"
 }
 
+// ENUM
 enum Role {
     USER
     ADMIN
@@ -18,11 +19,18 @@ enum UserType {
     EMAIL_PASSWORD
 }
 
+// TYPES
 type UserSocial {
     github String
     google String
 }
 
+type CoverImage {
+    url       String @default("https://via.placeholder.com/800x450.png")
+    localPath String @default("")
+}
+
+// MODELS
 model User {
     id                      String      @id @default(auto()) @map("_id") @db.ObjectId
     username                String      @unique
@@ -40,15 +48,8 @@ model User {
     avatar                  CoverImage?
     createdAt               DateTime    @default(now())
     updatedAt               DateTime    @updatedAt
-
-    Quotes         Quotes[]
-    SocialProfile  SocialProfile[]
-    SocialPost     SocialPost[]
-    SocialComment  SocialComment[]
-    SocialLike     SocialLike[]
-    SocialFollow   SocialFollow[]
-    SocialBookmark SocialBookmark[]
-    Todo           Todo[]
+    Quotes                  Quotes[]
+    Todo                    Todo[]
 
     @@index([id])
 }
@@ -74,93 +75,6 @@ model StatusCode {
     category      String
 }
 
-type CoverImage {
-    url       String @default("https://via.placeholder.com/800x450.png")
-    localPath String @default("")
-}
-
-model SocialProfile {
-    id          String       @id @default(auto()) @map("_id") @db.ObjectId
-    coverImage  CoverImage
-    firstName   String       @default("John")
-    lastName    String       @default("Doe")
-    bio         String       @default("")
-    dob         DateTime?
-    location    String       @default("")
-    countryCode String       @default("")
-    phoneNumber String       @default("")
-    ownerId     String       @unique @db.ObjectId
-    owner       User         @relation(fields: [ownerId], references: [id])
-    createdAt   DateTime     @default(now())
-    updatedAt   DateTime     @updatedAt
-    SocialPost  SocialPost[]
-}
-
-model SocialPost {
-    id        String        @id @default(auto()) @map("_id") @db.ObjectId
-    content   String
-    tags      String[]      @default([])
-    images    CoverImage[]
-    authorId  String        @db.ObjectId
-    author    SocialProfile @relation(fields: [authorId], references: [id])
-    createdAt DateTime      @default(now())
-    updatedAt DateTime      @updatedAt
-
-    SocialComment  SocialComment[]
-    SocialLike     SocialLike[]
-    SocialBookmark SocialBookmark[]
-    User           User?            @relation(fields: [userId], references: [id])
-    userId         String?          @db.ObjectId
-}
-
-model SocialComment {
-    id        String     @id @default(auto()) @map("_id") @db.ObjectId
-    content   String
-    postId    String     @db.ObjectId
-    post      SocialPost @relation(fields: [postId], references: [id])
-    authorId  String     @db.ObjectId
-    author    User       @relation(fields: [authorId], references: [id])
-    createdAt DateTime   @default(now())
-    updatedAt DateTime   @updatedAt
-
-    SocialLike SocialLike[]
-}
-
-model SocialLike {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-
-    postId    String        @db.ObjectId
-    post      SocialPost    @relation(fields: [postId], references: [id])
-    commentId String        @db.ObjectId
-    comment   SocialComment @relation(fields: [commentId], references: [id])
-    likedById String        @db.ObjectId
-    likedBy   User          @relation(fields: [likedById], references: [id])
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
-model SocialFollow {
-    id         String @id @default(auto()) @map("_id") @db.ObjectId
-    followerId String @db.ObjectId
-    followeeId String @db.ObjectId
-    followee   User   @relation(fields: [followeeId], references: [id])
-    // follower   User   @relation(fields: [followerId], references: [id])
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
-model SocialBookmark {
-    id             String     @id @default(auto()) @map("_id") @db.ObjectId
-    postId         String     @db.ObjectId
-    post           SocialPost @relation(fields: [postId], references: [id])
-    bookmarkedById String     @db.ObjectId
-    bookmarkedBy   User       @relation(fields: [bookmarkedById], references: [id])
-    createdAt      DateTime   @default(now())
-    updatedAt      DateTime   @updatedAt
-}
-
 model Todo {
     id          String   @id @default(auto()) @map("_id") @db.ObjectId
     title       String
@@ -171,3 +85,9 @@ model Todo {
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 }
+
+// model EcomCoupon {
+//     id        String   @id @default(auto()) @map("_id") @db.ObjectId
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+// }
