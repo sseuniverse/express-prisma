@@ -37,6 +37,7 @@ const getAllTodos = asyncHandler(async (req, res) => {
 
 const getTodoById = asyncHandler(async (req, res) => {
   const { todoId } = req.params;
+
   const todo = await db.todo.findUnique({
     where: { id: todoId, userId: req.user.id },
   });
@@ -69,14 +70,18 @@ const updateTodo = asyncHandler(async (req, res) => {
   const { todoId } = req.params;
   const { title, description } = req.body;
 
+  const isTodo = await db.todo.findUnique({
+    where: { id: todoId, userId: req.user.id },
+  });
+
+  if (!isTodo) {
+    throw new ApiError(404, "Todo does not exist");
+  }
+
   const todo = await db.todo.update({
     where: { id: todoId, userId: req.user.id },
     data: { title, description },
   });
-
-  if (!todo) {
-    throw new ApiError(404, "Todo does not exist");
-  }
 
   return res
     .status(200)
@@ -85,6 +90,7 @@ const updateTodo = asyncHandler(async (req, res) => {
 
 const toggleTodoDoneStatus = asyncHandler(async (req, res) => {
   const { todoId } = req.params;
+
   const todo = await db.todo.findUnique({
     where: { id: todoId, userId: req.user.id },
   });
@@ -103,21 +109,26 @@ const toggleTodoDoneStatus = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        todo,
-        `Todo marked ${todo.isComplete ? "done" : "undone"}`
+        updatedTodo,
+        `Todo marked ${updatedTodo.isComplete ? "done" : "undone"}`
       )
     );
 });
 
 const deleteTodo = asyncHandler(async (req, res) => {
   const { todoId } = req.params;
-  const todo = await db.todo.delete({
+
+  const isTodo = await db.todo.findUnique({
     where: { id: todoId, userId: req.user.id },
   });
 
-  if (!todo) {
+  if (!isTodo) {
     throw new ApiError(404, "Todo does not exist");
   }
+
+  const todo = await db.todo.delete({
+    where: { id: todoId, userId: req.user.id },
+  });
 
   return res
     .status(200)
